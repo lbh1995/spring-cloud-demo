@@ -1,0 +1,8 @@
+{
+  "properties": [
+    {
+      "name": "zuul.ratelimit.default-policy.limit",
+      "type": "java.lang.String",
+      "description": "Description for zuul.ratelimit.default-policy.limit."
+  }
+] }

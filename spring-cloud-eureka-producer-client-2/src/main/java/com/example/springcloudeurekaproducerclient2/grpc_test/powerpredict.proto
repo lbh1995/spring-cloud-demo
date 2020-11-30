@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.grpc.examples.powerpredict";
+option java_outer_classname = "PowerPredictProto";
+option objc_class_prefix = "HLW";
+
+package powerpredict;
+
+// The greeting service definition.
+service PowerPredictService {
+  // Sends a greeting
+  rpc PowerPredict (PowerPredictRequest) returns (PowerPredictReply) {}
+}
+
+// The request message containing the user's name.
+message PowerPredictRequest {
+  string host = 1;
+  string start_timestamp = 1;
+  string end_timestamp = 1;
+}
+
+// The response message containing the greetings
+message PowerPredictReply {
+  string power = 1;
+}

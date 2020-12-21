@@ -19,7 +19,7 @@ public class TestController {
     public String test(){
         System.out.println(environment.getProperty("local.server.port"));
         GRPCPowerPredictClient client = new GRPCPowerPredictClient(lbh_win_ip, 50051);
-        String res = client.greet("lbhmbp","1","100");
+        String res = client.greet("lbhmbp","1","100","1");
         return res + " - " + environment.getProperty("local.server.port");
     }
     @GetMapping("/hello/producer")

@@ -1,9 +1,5 @@
 package com.example.commonutils;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Properties;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import redis.clients.jedis.Jedis;

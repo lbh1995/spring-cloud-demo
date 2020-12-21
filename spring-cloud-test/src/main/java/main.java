@@ -1,6 +1,12 @@
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.geometry.Pos;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import sun.awt.windows.ThemeReader;
 import sun.misc.Timer;
 
@@ -10,29 +16,39 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+
+import static jdk.nashorn.internal.objects.NativeFunction.call;
 
 
 public class main {
     static String url_redis = "http://10.160.109.63:8080/team2/evaluation/test";
     static String body_redis = "entity=openstack01&startTimestamp=1568296200&endTimestamp=1568296399&algorithm=rf";
-    static String url_cloud = "http://localhost:5555/api-a/powerpredict";
+    static String url_cloud = "http://localhost:5555/api-powerpredict/powerpredict";
     static String body_cloud = "host=1&start_timestamp=1&end_timestamp=100";
     static class GetTestThread extends Thread{
         @Override
         public void run() {
             System.out.println("===========================================");
-            String m = SendGET("http://localhost:5555/api-a/hello/producer");
+            String m = SendGET("http://localhost:5555/api-powerpredict/powerpredict");
             System.out.println(m);
         }
     }
+
+    static class PostWithBodyThread extends Thread{
+        @Override
+        public void run() {
+            System.out.println(PostRequest.RestPost(url_redis));
+        }
+    }
+    static long time = 1568297500;
     static class PostTestThread extends Thread{
         String body = null;
-        CyclicBarrier cb;
+        CyclicBarrier cb = null;
         PostTestThread(String b,CyclicBarrier c){
             cb = c;
             body = b;
@@ -42,55 +58,152 @@ public class main {
         }
         @Override
         public void run() {
-            //System.out.println("===========================================");
-            String m = sendPost(url_cloud,body);
-            System.out.println(m);
-            long et = System.currentTimeMillis();
-            System.out.println(et);
-        }
-    }
-    static class PostWithBodyThread extends Thread{
-        @Override
-        public void run() {
-            System.out.println(PostRequest.RestPost(url_redis));
-        }
-    }
-    static long time = 1568296200;
-    public static void main(String[] args) throws InterruptedException {
-        long st = System.currentTimeMillis();
-        System.out.println(st);
-        String m = sendPost(url_cloud,"host=compute01&tagetTimestamp="+time+"&algorithm=rf");
-        System.out.println(m);
-        long et = System.currentTimeMillis();
-        System.out.println(et);
-        Thread.sleep(2000);
-        time = time + 100;
-        System.out.println(System.currentTimeMillis());
-        m = sendPost(url_cloud,"host=compute01&tagetTimestamp="+time+"&algorithm=rf");
-        System.out.println(m);
-        et = System.currentTimeMillis();
-        System.out.println(et);
-        Thread.sleep(2000);
-        time = time+100;
-        System.out.println(System.currentTimeMillis());
-        m = sendPost(url_cloud,"host=compute01&tagetTimestamp="+time+"&algorithm=rf");
-        System.out.println(m);
-        et = System.currentTimeMillis();
-        System.out.println(et);
-        /*
-        for (int i=0;i<1;i++){
-            time = time+50;
-            new PostTestThread("host=compute01&tagetTimestamp="+time+"&algorithm=rf").start();
-        }
-        for(int i=0;i<500;i++){
+            System.out.println("===========================================");
             try {
-                Thread.sleep(2);
-            } catch (InterruptedException e) {
+                long s = System.currentTimeMillis();
+                if(cb!=null) {
+                    cb.await();
+                }
+                String m = sendPost(url_cloud,body);
+                long e = System.currentTimeMillis();
+                System.out.println(m);
+                System.out.println(e-s);
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-            new GetTestThread().start();
         }
-         */
+    }
+
+    public static void main(String[] args) throws InterruptedException, IOException {
+        CyclicBarrier cb = new CyclicBarrier(5);
+        long time = 1568510473;
+        for (int i=0;i<50;i++){
+            new Thread(()->{
+                CloseableHttpResponse response = null;
+                Random random = new Random();
+                long t = random.nextInt(10000) + time;
+                try {
+                    CloseableHttpClient httpclient = HttpClients.createDefault();
+                    HttpGet httpget = new HttpGet("http://10.160.109.63:5555/api-powerpredict/powerpredict/"+t+"/RF/compute01");
+                    response = httpclient.execute(httpget);
+                    //4.处理结果
+                    System.out.println(EntityUtils.toString(response.getEntity()));
+                } catch (ClientProtocolException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        response.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                //SendGET("http://localhost:5555/api-powerpredict/powerpredict/"+time+"/ARIMA/compute01");
+
+            }).start();
+
+            Thread.sleep(20);
+        }
+    }
+
+    public static boolean isNumeric(String str) {
+        str = str.trim();
+        if(str.length()==0) return false;
+        if(str.contains("e")&&str.contains("E")) return false;
+        String[] split = null;
+        boolean flag_e = false;
+        if(str.contains("e")){
+            split = str.split("e");
+            flag_e = true;
+        }else if (str.contains("E")){
+            split = str.split("E");
+            flag_e = true;
+        }
+        if(flag_e==true){
+            if(split.length!=2){
+                return false;
+            }
+            if(split[0].equals("")) return false;
+            for(int i=0;i<split[1].length();i++){
+                if(i==0){
+                    if((split[1].charAt(i)>'9' || split[1].charAt(i)<'0')){
+                        if((split[1].charAt(i)=='+' || split[1].charAt(i)=='-')){
+                            if(split[1].length()==1)
+                                return false;
+                        }else{
+                            return false;
+                        }
+                    }
+                }else{
+                    if(split[1].charAt(i)>'9' || split[1].charAt(i)<'0')
+                        return false;
+                }
+            }
+            boolean flag = false;
+            for(int i=0;i<split[0].length();i++){
+                if(i==0){
+                    if((split[0].charAt(i)>'9' || split[0].charAt(i)<'0')) {
+                        if (split[0].charAt(i)!='+' && split[0].charAt(i)!='-'){
+                            if(split[0].charAt(i)=='.'){
+                                if(split[0].length()==1) return false;
+                                flag = true;
+                            }else{
+                                return false;
+                            }
+                        }else{
+                            if (split[0].length()==1){
+                                return false;
+                            }
+                        }
+                    }
+                }else{
+                    if(split[0].charAt(i)>'9' || split[0].charAt(i)<'0'){
+                        if(!flag){
+                            if(split[0].charAt(i)=='.'){
+
+                                flag = true;
+                            }else{
+                                return false;
+                            }
+                        }else{
+                            return false;
+                        }
+                    }
+                }
+            }
+        }else{
+            boolean flag = false;
+            for(int i=0;i<str.length();i++){
+                if(i==0){
+                    if((str.charAt(i)>'9' || str.charAt(i)<'0') &&
+                            (str.charAt(i)!='+' && str.charAt(i)!='-'))
+                        if(str.charAt(i)=='.'){
+                            if(str.length()==1) return false;
+                            flag = true;
+                        }else{
+                            return false;
+                        }
+                }else{
+                    if(str.charAt(i)>'9' || str.charAt(i)<'0'){
+                        if(!flag){
+                            if(str.charAt(i)=='.'){
+                                flag = true;
+                                if((i+1<str.length() && (str.charAt(i+1)>'9' || str.charAt(i+1)<'0'))){
+                                    return false;
+                                }
+                                if(i+1>=str.length() && (str.charAt(i-1)>'9' || str.charAt(i-1)<'0')) return false;
+                            }else{
+                                return false;
+                            }
+                        }else{
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
     }
     public static String SendGET(String url) {
         String result="";//访问返回结果
@@ -100,10 +213,6 @@ public class main {
             URL realurl=new URL(url);
             //打开连接
             URLConnection connection=realurl.openConnection();
-            // 设置通用的请求属性
-            connection.setRequestProperty("accept", "*/*");
-            connection.setRequestProperty("connection", "Keep-Alive");
-            connection.setRequestProperty("user-agent","Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
 
             //建立连接
             connection.connect();
@@ -146,7 +255,6 @@ public class main {
             conn.setRequestProperty("connection", "Keep-Alive");
             conn.setRequestProperty("user-agent",
                     "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
-            //conn.setRequestProperty("Content-Type","application/json;charset=utf-8");
             conn.setDoOutput(true);
             conn.setDoInput(true);
             // 获取URLConnection对象对应的输出流

@@ -1,4 +1,4 @@
-package com.example.commonutils;
+package com.example.model;
 
 public class DataNotExistFlag {
     boolean flag = true;
@@ -6,7 +6,7 @@ public class DataNotExistFlag {
         flag = b;
     }
 
-    public boolean isFlag() {
+    public boolean getFlag() {
         return flag;
     }
 

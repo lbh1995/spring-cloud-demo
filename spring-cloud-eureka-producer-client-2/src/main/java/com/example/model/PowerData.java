@@ -1,22 +1,31 @@
 package com.example.model;
 
 public class PowerData {
-    long timestamp;
-    String power;
+    String timestamp;
+    int real;
+    int pred;
 
-    public long getTimestamp() {
+    public int getReal() {
+        return real;
+    }
+
+    public void setReal(int real) {
+        this.real = real;
+    }
+
+    public int getPred() {
+        return pred;
+    }
+
+    public void setPred(int pred) {
+        this.pred = pred;
+    }
+
+    public String getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(long timestamp) {
+    public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
-    }
-
-    public String getPower() {
-        return power;
-    }
-
-    public void setPower(String power) {
-        this.power = power;
     }
 }

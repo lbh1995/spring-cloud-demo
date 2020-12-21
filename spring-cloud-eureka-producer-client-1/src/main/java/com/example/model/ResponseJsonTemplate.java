@@ -1,6 +1,10 @@
 package com.example.model;
 
-public class ResponseJsonTemplate {
+public abstract class ResponseJsonTemplate {
+    protected String status;
+    protected String server;
+    protected String description;
+
     public String getStatus() {
         return status;
     }
@@ -17,7 +21,11 @@ public class ResponseJsonTemplate {
         this.server = server;
     }
 
-    private String status;
-    private String server;
-    
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

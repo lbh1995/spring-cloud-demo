@@ -3,9 +3,9 @@ package com.example.gRPC;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
-import io.grpc.examples.powerpredict.PowerPredictServiceGrpc;
 import io.grpc.examples.powerpredict.PowerPredictReply;
 import io.grpc.examples.powerpredict.PowerPredictRequest;
+import io.grpc.examples.powerpredict.PowerPredictServiceGrpc;
 
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -43,8 +43,20 @@ public class GRPCPowerPredictClient {
         } catch (StatusRuntimeException e) {
             logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus());
             return "error";
+        }finally {
+            try {
+                if (channel!=null) {
+                    shutdown();
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         //logger.info("Greeting: " + response.getMessage());
+        if (response==null){
+            System.out.println("服务端未链接");
+            return null;
+        }
         System.out.println("服务端返回结果："+response.getPower());
         return response.getPower();
     }

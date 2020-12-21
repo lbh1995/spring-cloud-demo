@@ -1,6 +1,6 @@
 package com.example.model;
 
-public class ResponsePowerJson extends ResponseJsonTemplate{
+public class ResponsePowerPredictJson extends ResponseJsonTemplate{
     private PowerData data;
 
     public PowerData getData() {

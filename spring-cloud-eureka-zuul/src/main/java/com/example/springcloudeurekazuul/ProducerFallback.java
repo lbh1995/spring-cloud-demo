@@ -1,5 +1,6 @@
 package com.example.springcloudeurekazuul;
 
+import cn.hutool.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.netflix.zuul.filters.route.FallbackProvider;
@@ -20,7 +21,7 @@ public class ProducerFallback implements FallbackProvider {
     //指定要处理的 service。
     @Override
     public String getRoute() {
-        return "producer-service";
+        return "power-predict-service";
     }
 
     @Override
@@ -33,7 +34,7 @@ public class ProducerFallback implements FallbackProvider {
 
             @Override
             public int getRawStatusCode() throws IOException {
-                return 200;
+                return 500;
             }
 
             @Override
@@ -48,7 +49,10 @@ public class ProducerFallback implements FallbackProvider {
 
             @Override
             public InputStream getBody() throws IOException {
-                return new ByteArrayInputStream("The service is unavailable.".getBytes());
+                JSONObject json = new JSONObject();
+                json.put("status","500");
+                json.put("description","Fallback, please try power-predict again!");
+                return new ByteArrayInputStream(json.toString().getBytes("UTF-8"));
             }
 
             @Override

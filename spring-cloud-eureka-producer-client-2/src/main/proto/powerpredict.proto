@@ -18,6 +18,7 @@ message PowerPredictRequest {
   string host = 1;
   string start = 2;
   string end = 3;
+  string algorithm = 4;
 }
 
 // The response message containing the greetings

@@ -1,4 +1,4 @@
-package com.example.springcloudeurekaproducerclient2.grpc_test;
+package com.example.gRPC;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -33,10 +33,10 @@ public class GRPCPowerPredictClient {
         channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
     }
 
-    public String greet(String host,String start,String end) {
+    public String greet(String host,String start,String end,String algorithm) {
         System.out.println("Will try to predict " + host + " between " +start + "and" + end);
         PowerPredictRequest request = PowerPredictRequest.newBuilder()
-                .setHost(host).setStart(start).setEnd(end).build();
+                .setHost(host).setStart(start).setEnd(end).setAlgorithm(algorithm).build();
         PowerPredictReply response;
         try {
             response = blockingStub.powerPredict(request);
@@ -49,3 +49,5 @@ public class GRPCPowerPredictClient {
         return response.getPower();
     }
 }
+
+

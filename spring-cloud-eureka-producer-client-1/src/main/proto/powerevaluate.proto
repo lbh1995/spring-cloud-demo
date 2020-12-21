@@ -3,7 +3,7 @@ syntax = "proto3";
 option java_multiple_files = true;
 option java_package = "io.grpc.examples.powerpredict";
 option java_outer_classname = "PowerPredictProto";
-option objc_class_prefix = "HLW";
+option objc_class_prefix = "PPP";
 
 package powerpredict;
 
@@ -16,8 +16,8 @@ service PowerPredictService {
 // The request message containing the user's name.
 message PowerPredictRequest {
   string host = 1;
-  string start_timestamp = 1;
-  string end_timestamp = 1;
+  string start = 2;
+  string end = 3;
 }
 
 // The response message containing the greetings
